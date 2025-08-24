@@ -4,10 +4,11 @@ local Light = game:GetService("Lighting")
 local esplib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/esp-On/refs/heads/main/On"))()
 local flight = loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/esp-On/refs/heads/main/off"))()
 local ts = game:GetService("TeleportService")
-local p = game:GetService("Players").LocalPlayer
-
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local p = LocalPlayer
 local playerList = {}
+local Speed = 30 -- default
 
 library.rank = "developer"
 local Wm = library:Watermark("Phenux | v1.00 | " .. library:GetUsername() )
@@ -16,7 +17,6 @@ local FpsWm = Wm:AddWatermark("fps: " .. library.fps)
 coroutine.wrap(function()
     while wait(0.75) do
         FpsWm:Text("fps: " .. library.fps)
-        
         playerList = {}
         for _, player in ipairs(Players:GetPlayers()) do
             table.insert(playerList, player.Name)
@@ -24,19 +24,17 @@ coroutine.wrap(function()
     end
 end)()
 
------ save the fb
+-- Fullbright functions
 local originalSettings = {
     Ambient = Light.Ambient,
     ColorShift_Bottom = Light.ColorShift_Bottom,
     ColorShift_Top = Light.ColorShift_Top
 }
------a 
- 
--- functions
+
 function dofullbright()
-Light.Ambient = Color3.new(1, 1, 1)
-Light.ColorShift_Bottom = Color3.new(1, 1, 1)
-Light.ColorShift_Top = Color3.new(1, 1, 1)
+    Light.Ambient = Color3.new(1, 1, 1)
+    Light.ColorShift_Bottom = Color3.new(1, 1, 1)
+    Light.ColorShift_Top = Color3.new(1, 1, 1)
 end
 
 function nonoFullbright()
@@ -44,27 +42,21 @@ function nonoFullbright()
     Light.ColorShift_Bottom = originalSettings.ColorShift_Bottom
     Light.ColorShift_Top = originalSettings.ColorShift_Top
 end
---------
 
 local Notif = library:InitNotifications()
-
-for i = 2,0,-1 do 
+for i = 2,0,-1 do
     task.wait(0.3)
-    local LoadingXSX = Notif:Notify("Loading xsx lib v2, please be patient.", 3, "information") -- notification, alert, error, success, information
-end 
+    Notif:Notify("Loading xsx lib v2, please be patient.", 3, "information")
+end
 
 library.title = "Phenux"
-
-
 library:Introduction()
 wait(1)
 local Init = library:Init()
 
-
-
 local TPlay = Init:NewTab("Player")
 
-
+-- Flight toggle
 local Flytoggle = TPlay:NewToggle("Flight", false, function(value)
     if value then
         startFly()
@@ -73,24 +65,81 @@ local Flytoggle = TPlay:NewToggle("Flight", false, function(value)
     end
 end)
 
+-- Default speed
+local Speed = 30
 
-
-local Flyslider = TPlay:NewSlider("Slider 1", "", true, "/", {min = 10, max = 500, default = 50}, function(value)
-    _G.flySpeed = value
+-- Slider in your Player tab
+local SpeedSlider = TPlay:NewSlider("WalkSpeed", "Change your speed", true, "/", {min = 10, max = 500, default = Speed}, function(value)
+    Speed = value
 end)
 
-local SpeedSlider = TPlay:NewSlider("Slider 1", "", true, "/", {min = 10, max = 500, default = 16}, function(Speed)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
-end)
+-- Looping WalkSpeed implementation
+local HumanModCons = {}
 
+local function SetupWalkSpeed(humanoid)
+    if not humanoid then return end
+    if HumanModCons.wsLoop then HumanModCons.wsLoop:Disconnect() end
+    if HumanModCons.wsCA then HumanModCons.wsCA:Disconnect() end
 
+    local function LockSpeed()
+        if humanoid and humanoid.Parent then
+            humanoid.WalkSpeed = Speed
+        end
+    end
 
+    HumanModCons.wsLoop = humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(LockSpeed)
 
+    HumanModCons.wsCA = LocalPlayer.CharacterAdded:Connect(function(newChar)
+        local newHum = newChar:WaitForChild("Humanoid")
+        SetupWalkSpeed(newHum)
+    end)
+
+    task.spawn(function()
+        while humanoid.Parent do
+            LockSpeed()
+            task.wait(0.2)
+        end
+    end)
+end
+
+-- Apply immediately if character exists
+if LocalPlayer.Character then
+    local hum = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+    if hum then
+        SetupWalkSpeed(hum)
+    end
+end
+
+-- Players tab
 local TPlays = Init:NewTab("Players")
 
+
+for _, playerName in ipairs(playerList) do
+    TPlays:NewSelector(playerName, "Choose an action", {"Goto", "Fling", "Kill", "Loopkill"}, function(action)
+        if action == "Goto" then
+            print("Going to:", playerName)
+            -- your goto code here
+        elseif action == "Fling" then
+            print("Flinging:", playerName)
+            -- your fling code here
+        elseif action == "Kill" then
+            print("killing:", playerName)
+        elseif action == "Loopkill" then
+            print("Loopkilling:", playerName)
+            -- your loopkill code here
+        end
+    end)
+end
+
+
+
+
+
+-- Farms tab
 local TFarm = Init:NewTab("Farms")
 
-local TSee = Init:NewTab("Visual")  -- done for now
+-- Visual tab
+local TSee = Init:NewTab("Visual")
 
 local FBtoggle = TSee:NewToggle("FullBright", false, function(value)
     if value then
@@ -100,39 +149,24 @@ local FBtoggle = TSee:NewToggle("FullBright", false, function(value)
     end
 end)
 
-
 local EspToggle = TSee:NewToggle("Esp", false, function(value)
-    if value then
-        EnableESP()
-    else
-        DisableESP()
-    end
+    if value then EnableESP() else DisableESP() end
 end)
 
-
-
-
+-- Misc tab
 local TMisc = Init:NewTab("Misc")
 
-
-
-
+-- Rejoin
 local Rejoin = TMisc:NewButton("Rejoin", function()
-    -- Queue the script to run again after teleport
     if syn then
-        syn.queue_on_teleport([[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/full-script/refs/heads/main/script"))()
-        ]])
+        syn.queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/full-script/refs/heads/main/script"))()]])
     elseif queue_on_teleport then
-        queue_on_teleport([[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/full-script/refs/heads/main/script"))()
-        ]])
+        queue_on_teleport([[loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/full-script/refs/heads/main/script"))()]])
     end
-
-    -- Teleport to the same server
-    ts:Teleport(game.PlaceId, plr)
+    ts:Teleport(game.PlaceId, p)
 end)
 
+-- Close GUI
 local Nogui = TMisc:NewButton("Close GUI", function()
-    Init:Remove()  -- destroys the UI
+    Init:Remove()
 end)
