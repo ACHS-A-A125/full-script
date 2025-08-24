@@ -1,3 +1,4 @@
+print(":started loading:")
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Consistt/Ui/main/UnLeaked"))()
 local Light = game:GetService("Lighting")
 local esplib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/esp-On/refs/heads/main/On"))()
@@ -5,12 +6,21 @@ local flight = loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A
 local ts = game:GetService("TeleportService")
 local p = game:GetService("Players").LocalPlayer
 
+local Players = game:GetService("Players")
+local playerList = {}
+
 library.rank = "developer"
 local Wm = library:Watermark("Phenux | v1.00 | " .. library:GetUsername() )
 local FpsWm = Wm:AddWatermark("fps: " .. library.fps)
+
 coroutine.wrap(function()
-    while wait(.75) do
+    while wait(0.75) do
         FpsWm:Text("fps: " .. library.fps)
+        
+        playerList = {}
+        for _, player in ipairs(Players:GetPlayers()) do
+            table.insert(playerList, player.Name)
+        end
     end
 end)()
 
@@ -64,9 +74,13 @@ local Flytoggle = TPlay:NewToggle("Flight", false, function(value)
 end)
 
 
+
 local Flyslider = TPlay:NewSlider("Slider 1", "", true, "/", {min = 10, max = 500, default = 50}, function(value)
     _G.flySpeed = value
 end)
+
+
+
 local TPlays = Init:NewTab("Players")
 
 local TFarm = Init:NewTab("Farms")
@@ -96,9 +110,6 @@ end)
 local TMisc = Init:NewTab("Misc")
 
 
-local Keybind1 = TMisc:NewKeybind("Visible", Enum.KeyCode.LeftControl, function(key)
-    Init:UpdateKeybind(Enum.KeyCode[key])
-end)
 
 
 local Rejoin = TMisc:NewButton("Rejoin", function()
