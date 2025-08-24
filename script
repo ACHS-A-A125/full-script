@@ -1,0 +1,109 @@
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Consistt/Ui/main/UnLeaked"))()
+local Light = game:GetService("Lighting")
+local esplib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ACHS-A-A125/esp-On/refs/heads/main/On"))()
+local ts = game:GetService("TeleportService")
+local p = game:GetService("Players").LocalPlayer
+
+library.rank = "developer"
+local Wm = library:Watermark("Phenux | v1.00 | " .. library:GetUsername() )
+local FpsWm = Wm:AddWatermark("fps: " .. library.fps)
+coroutine.wrap(function()
+    while wait(.75) do
+        FpsWm:Text("fps: " .. library.fps)
+    end
+end)()
+
+----- save the fb
+local originalSettings = {
+    Ambient = Light.Ambient,
+    ColorShift_Bottom = Light.ColorShift_Bottom,
+    ColorShift_Top = Light.ColorShift_Top
+}
+-----a 
+ 
+-- functions
+function dofullbright()
+Light.Ambient = Color3.new(1, 1, 1)
+Light.ColorShift_Bottom = Color3.new(1, 1, 1)
+Light.ColorShift_Top = Color3.new(1, 1, 1)
+end
+
+function nonoFullbright()
+    Light.Ambient = originalSettings.Ambient
+    Light.ColorShift_Bottom = originalSettings.ColorShift_Bottom
+    Light.ColorShift_Top = originalSettings.ColorShift_Top
+end
+--------
+
+local Notif = library:InitNotifications()
+
+for i = 2,0,-1 do 
+    task.wait(0.3)
+    local LoadingXSX = Notif:Notify("Loading xsx lib v2, please be patient.", 3, "information") -- notification, alert, error, success, information
+end 
+
+library.title = "Phenux"
+
+
+library:Introduction()
+wait(1)
+local Init = library:Init()
+
+
+
+local TPlay = Init:NewTab("Player")
+
+local TPlays = Init:NewTab("Players")
+
+local TFarm = Init:NewTab("Farms")
+
+local TSee = Init:NewTab("Visual")  -- done for now
+
+local FBtoggle = TSee:NewToggle("FullBright", false, function(value)
+    if value then
+        dofullbright()
+    else
+        nonoFullbright()
+    end
+end)
+
+
+local EspToggle = TSee:NewToggle("Esp", false, function(value)
+    if value then
+        EnableESP()
+    else
+        DisableESP()
+    end
+end)
+
+
+
+
+local TMisc = Init:NewTab("Misc")
+
+
+local Rejoin = TMisc:NewButton("Rejoin", function()
+    -- Queue the script to run again after teleport
+    if syn then
+        syn.queue_on_teleport([[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUsername/YourScript/main/Script.lua"))()
+        ]])
+    elseif queue_on_teleport then
+        queue_on_teleport([[
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/YourUsername/YourScript/main/Script.lua"))()
+        ]])
+    end
+
+    -- Teleport to the same server
+    ts:Teleport(game.PlaceId, plr)
+end)
+
+
+
+local Keybind1 = TMisc:NewKeybind("Visible", Enum.KeyCode.LeftControl, function(key)
+    Init:UpdateKeybind(Enum.KeyCode[key])
+end)
+
+local Nogui = TMisc:NewButton("Close GUI", function()
+    Init:Remove()  -- destroys the UI
+end)
